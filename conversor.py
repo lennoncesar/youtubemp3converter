@@ -15,7 +15,7 @@ def sanitize_filename(name):
 @app.route('/')
 def home():
     with open('index.html', encoding='utf-8') as f:
-    return render_template_string(f.read())
+        return render_template_string(f.read())
 
 @app.route('/convert', methods=['POST'])
 def convert():
