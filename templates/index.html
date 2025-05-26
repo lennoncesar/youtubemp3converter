@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Conversor de vídeo do site google youtube para o formato mp3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    input, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input {
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #007BFF; /* azul */
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3; /* azul mais escuro ao passar o mouse */
+    }
+
+    .status {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      white-space: nowrap; /* evitar quebra de linha */
+    }
+
+    .download-button {
+      display: inline-block;
+      background-color: #28a745; /* verde */
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .download-button:hover {
+      background-color: #218838; /* verde mais escuro */
+    }
+
+    /* Estilo para o span dos pontos, largura fixa para evitar salto */
+    #dots {
+      display: inline-block;
+      width: 3ch; /* largura fixa para até 3 pontos */
+      text-align: left;
+      margin-left: 6px; /* espaço entre "Convertendo" e os pontos */
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+  <h2>Conversor de vídeo do site google youtube para o formato mp3</h2>
+
+  <input type="text" id="youtubeUrl" placeholder="Inserir o link do site google youtube">
+  <button onclick="converter()">Converter</button>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    let loadingInterval;
+
+    function startLoading() {
+      const dotsSpan = document.getElementById('dots');
+      let count = 0;
+      loadingInterval = setInterval(() => {
+        count = (count + 1) % 4; // de 0 até 3 pontos
+        dotsSpan.textContent = '.'.repeat(count);
+      }, 500);
+    }
+
+    function stopLoading() {
+      clearInterval(loadingInterval);
+      const dotsSpan = document.getElementById('dots');
+      if (dotsSpan) dotsSpan.textContent = '';
+    }
+
+    async function converter() {
+      const urlInput = document.getElementById('youtubeUrl').value.trim();
+      const status = document.getElementById('status');
+
+      if (!urlInput) {
+        status.innerHTML = '<span style="color: red;">Por favor, inserir um link do site google youtube.</span>';
+        return;
+      }
+
+      status.innerHTML = 'Convertendo<span id="dots"></span>';
+      startLoading();
+
+      try {
+        const response = await fetch('/convert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlInput })
+        });
+
+        stopLoading();
+
+        const data = await response.json();
+
+        if (response.ok) {
+          status.innerHTML = `
+            <a href="${data.download_url}" class="download-button" download="audio.mp3">
+              Download do arquivo .mp3
+            </a>
+          `;
+        } else {
+          status.innerHTML = `<span style="color: red;">Erro: ${data.error}</span>`;
+        }
+      } catch (err) {
+        stopLoading();
+        status.innerHTML = `<span style="color: red;">Erro na conexão com o servidor.</span>`;
+      }
+    }
+
+    // Enter aciona o botão converter
+    document.getElementById('youtubeUrl').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        converter();
+      }
+    });
+  </script>
+</body>
+</html>
